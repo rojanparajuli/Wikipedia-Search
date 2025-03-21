@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:wiki/bloc/splash/splash_screen_bloc.dart';
 import 'package:wiki/bloc/wiki_bloc.dart';
-import 'package:wiki/view/wiki_screen.dart';
+import 'package:wiki/view/splash_screen.dart';
+import '../bloc/splash/splash_screen_event.dart';
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -12,9 +14,17 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'Wikipedia Search',
       theme: ThemeData(primarySwatch: Colors.blue),
-      home: BlocProvider(
-        create: (context) => WikipediaBloc(),
-        child: WikipediaSearchScreen(),
+      home: MultiBlocProvider(
+        providers: [
+           BlocProvider(
+          create: (context) => SplashBloc()..add(CheckInternetEvent()),
+        ),
+        BlocProvider(
+          create: (context) => WikipediaBloc(),)
+        ],
+          
+          child: SplashScreen(),
+        
       ),
     );
   }
