@@ -10,22 +10,22 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: 'Wikipedia Search',
-      theme: ThemeData(primarySwatch: Colors.blue),
-      home: MultiBlocProvider(
-        providers: [
-           BlocProvider(
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(
           create: (context) => SplashBloc()..add(CheckInternetEvent()),
         ),
         BlocProvider(
-          create: (context) => WikipediaBloc(),)
-        ],
-          
-          child: SplashScreen(),
-        
+          create: (context) => WikipediaBloc(),
+        ),
+      ],
+      child: MaterialApp(
+        debugShowCheckedModeBanner: false,
+        title: 'Wikipedia Search',
+        theme: ThemeData(primarySwatch: Colors.blue),
+        home: SplashScreen(),
       ),
     );
   }
 }
+
