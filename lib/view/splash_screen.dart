@@ -14,7 +14,7 @@ class SplashScreen extends StatelessWidget {
       body: BlocListener<SplashBloc, SplashState>(
         listener: (context, state) {
           if (state is SplashCompletedState) {
-            Navigator.pushReplacement(
+               Navigator.pushReplacement(
               context,
               MaterialPageRoute(builder: (_) => WikipediaSearchScreen()),
             );
@@ -79,9 +79,7 @@ class SplashScreen extends StatelessWidget {
                         ),
                       ),
                       onPressed: () {
-                        context
-                            .read<SplashBloc>()
-                            .add(CheckInternetEvent());
+                        context.read<SplashBloc>().add(CheckInternetEvent());
                       },
                       child: const Text('Retry'),
                     ),
@@ -96,17 +94,14 @@ class SplashScreen extends StatelessWidget {
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(10),
                             gradient: const LinearGradient(
-                              colors: [
-                                Colors.greenAccent,
-                                Colors.lightGreen
-                              ],
+                              colors: [Colors.greenAccent, Colors.lightGreen],
                               begin: Alignment.centerLeft,
                               end: Alignment.centerRight,
                             ),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.greenAccent
-                                    .withValues(alpha: 0.4),
+                                color:
+                                    Colors.greenAccent.withValues(alpha: 0.4),
                                 blurRadius: 6,
                                 spreadRadius: 2,
                                 offset: const Offset(0, 2),

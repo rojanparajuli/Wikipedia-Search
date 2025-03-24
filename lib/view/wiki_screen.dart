@@ -6,6 +6,7 @@ import 'package:shimmer/shimmer.dart';
 import 'package:wiki/bloc/wiki_bloc.dart';
 import 'package:wiki/bloc/wiki_event.dart';
 import 'package:wiki/bloc/wiki_state.dart';
+import 'package:wiki/view/detail_screen.dart';
 
 class WikipediaSearchScreen extends StatelessWidget {
   final TextEditingController _controller = TextEditingController();
@@ -79,39 +80,51 @@ class WikipediaSearchScreen extends StatelessWidget {
                       itemCount: state.results.length,
                       itemBuilder: (context, index) {
                         var result = state.results[index];
-                        return Card(
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(15),
-                          ),
-                          margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 5),
-                          child: ListTile(
-                            title: Text(
-                              result['title'],
-                              style: GoogleFonts.lato(fontWeight: FontWeight.bold, color: Colors.black),
-                            ),
-                            subtitle: Text(
-                              result['snippet'].replaceAll(RegExp(r'<[^>]*>'), ''),
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                              style: GoogleFonts.lato(color: Colors.grey.shade700),
-                            ),
-                            trailing: const Icon(Icons.arrow_forward_ios, color: Colors.blue),
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => WikipediaDetailScreen(title: result['title']),
+                        return FutureBuilder<String>(
+                          future: fetchWikipediaImageUrl(result['title']),
+                          builder: (context, snapshot) {
+                            String? imageUrl = snapshot.data;
+                            return Card(
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(15),
+                              ),
+                              margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 5),
+                              child: ListTile(
+                                leading: imageUrl != null && imageUrl.isNotEmpty
+                                    ? Image.network(imageUrl, width: 50, height: 50, fit: BoxFit.cover)
+                                    : const Icon(Icons.image_not_supported, size: 50, color: Colors.grey),
+                                title: Text(
+                                  result['title'],
+                                  style: GoogleFonts.lato(fontWeight: FontWeight.bold, color: Colors.black),
                                 ),
-                              );
-                            },
-                          ),
+                                subtitle: Text(
+                                  result['snippet'].replaceAll(RegExp(r'<[^>]*>'), ''),
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: GoogleFonts.lato(color: Colors.grey.shade700),
+                                ),
+                                trailing: const Icon(Icons.arrow_forward_ios, color: Colors.blue),
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => WikipediaDetailScreen(
+                                        title: result['title'],
+                                        snippet: result['snippet'],
+                                        imageUrl: imageUrl,
+                                      ),
+                                    ),
+                                  );
+                                },
+                              ),
+                            );
+                          },
                         );
                       },
                     );
                   } else if (state is WikipediaError) {
                     return const Center(
-                      child: Text('Error fetching data',
-                          style: TextStyle(color: Colors.red, fontSize: 16)),
+                      child: Text('Error fetching data', style: TextStyle(color: Colors.red, fontSize: 16)),
                     );
                   }
                   return Center(
@@ -128,53 +141,25 @@ class WikipediaSearchScreen extends StatelessWidget {
       ),
     );
   }
-}
-
-class WikipediaDetailScreen extends StatelessWidget {
-  final String title;
-
-  const WikipediaDetailScreen({super.key, required this.title});
 
   Future<String> fetchWikipediaImageUrl(String title) async {
-    final response = await Dio().get(
-      'https://en.wikipedia.org/w/api.php',
-      queryParameters: {
-        'action': 'query',
-        'format': 'json',
-        'prop': 'pageimages',
-        'piprop': 'original',
-        'titles': title,
-      },
-    );
-    var pages = response.data['query']['pages'];
-    var page = pages.values.first;
-    return page.containsKey('original') ? page['original']['source'] : '';
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text(title)),
-      body: FutureBuilder<String>(
-        future: fetchWikipediaImageUrl(title),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          } else if (snapshot.hasError || snapshot.data!.isEmpty) {
-            return const Center(child: Text('No image available'));
-          }
-          return Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Image.network(snapshot.data!),
-                const SizedBox(height: 20),
-                Text(title, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
-              ],
-            ),
-          );
+    try {
+      final response = await Dio().get(
+        'https://en.wikipedia.org/w/api.php',
+        queryParameters: {
+          'action': 'query',
+          'format': 'json',
+          'prop': 'pageimages',
+          'piprop': 'thumbnail',
+          'pithumbsize': 100,
+          'titles': title,
         },
-      ),
-    );
+      );
+      var pages = response.data['query']['pages'];
+      var page = pages.values.first;
+      return page.containsKey('thumbnail') ? page['thumbnail']['source'] : '';
+    } catch (e) {
+      return '';
+    }
   }
 }
