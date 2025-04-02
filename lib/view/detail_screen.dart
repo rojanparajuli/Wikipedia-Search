@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class WikipediaDetailScreen extends StatelessWidget {
   final String title;
@@ -15,69 +16,162 @@ class WikipediaDetailScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.grey.shade50,
       appBar: AppBar(
-        leading: IconButton(onPressed: (){
-          Navigator.pop(context);
-        },
-          icon: const Icon(Icons.arrow_back_ios_new, color: Colors.black),
+        leading: IconButton(
+          onPressed: () => Navigator.pop(context),
+          icon: const Icon(Icons.arrow_back_ios_new_rounded,
+              color: Colors.black87, size: 22),
         ),
-        title: Text(title, style: const TextStyle(fontWeight: FontWeight.w600)),
+        title: Text(
+          title,
+          style: GoogleFonts.poppins(
+            fontWeight: FontWeight.w600,
+            color: Colors.black87,
+            fontSize: 18,
+          ),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
         centerTitle: true,
-        elevation: 0.5,
+        elevation: 0,
+        backgroundColor: Colors.white,
+        shadowColor: Colors.black.withValues(alpha: 0.1),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            if (imageUrl != null && imageUrl!.isNotEmpty)
-              Container(
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(12),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.1),
-                      blurRadius: 6,
-                      offset: const Offset(0, 2),
+      body: SingleChildScrollView(
+        physics: const BouncingScrollPhysics(),
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Hero(
+                tag: 'articleImage-$title',
+                child: Material(
+                  borderRadius: BorderRadius.circular(16),
+                  elevation: 2,
+                  child: Container(
+                    height: 220,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(16),
+                      color: Colors.grey.shade100,
                     ),
-                  ],
-                ),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(12),
-                  child: Image.network(
-                    imageUrl!,
-                    height: 200,
-                    width: double.infinity,
-                    fit: BoxFit.cover,
+                    child: imageUrl != null && imageUrl!.isNotEmpty
+                        ? ClipRRect(
+                            borderRadius: BorderRadius.circular(16),
+                            child: Image.network(
+                              imageUrl!,
+                              fit: BoxFit.cover,
+                              loadingBuilder:
+                                  (context, child, loadingProgress) {
+                                if (loadingProgress == null) return child;
+                                return Center(
+                                  child: CircularProgressIndicator(
+                                    value: loadingProgress.expectedTotalBytes !=
+                                            null
+                                        ? loadingProgress
+                                                .cumulativeBytesLoaded /
+                                            loadingProgress.expectedTotalBytes!
+                                        : null,
+                                    color: Colors.blue,
+                                  ),
+                                );
+                              },
+                              errorBuilder: (context, error, stackTrace) {
+                                return Center(
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      const Icon(
+                                        Icons.broken_image_rounded,
+                                        size: 50,
+                                        color: Colors.grey,
+                                      ),
+                                      const SizedBox(height: 8),
+                                      Text(
+                                        'Image not available',
+                                        style: GoogleFonts.poppins(
+                                          color: Colors.grey.shade600,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              },
+                            ),
+                          )
+                        : Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                const Icon(
+                                  Icons.article_rounded,
+                                  size: 50,
+                                  color: Colors.grey,
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  'No image available',
+                                  style: GoogleFonts.poppins(
+                                    color: Colors.grey.shade600,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
                   ),
                 ),
-              )
-            else
-              const Icon(Icons.image_not_supported,
-                  size: 100, color: Colors.grey),
-            const SizedBox(height: 20),
-            Text(
-              title,
-              style: const TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.w600,
               ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 12),
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.grey.shade300),
+              const SizedBox(height: 24),
+              Text(
+                title,
+                style: GoogleFonts.poppins(
+                  fontSize: 24,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.black87,
+                  height: 1.3,
+                ),
+                textAlign: TextAlign.center,
               ),
-              child: Text(
-                snippet.replaceAll(RegExp(r'<[^>]*>'), ''),
-                textAlign: TextAlign.justify,
-                style: const TextStyle(fontSize: 16, height: 1.5),
+              const SizedBox(height: 16),
+              Material(
+                borderRadius: BorderRadius.circular(12),
+                elevation: 0.5,
+                color: Colors.white,
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Text(
+                    snippet.replaceAll(RegExp(r'<[^>]*>'), ''),
+                    style: GoogleFonts.poppins(
+                      fontSize: 16,
+                      height: 1.6,
+                      color: Colors.grey.shade800,
+                    ),
+                    textAlign: TextAlign.justify,
+                  ),
+                ),
               ),
-            ),
-          ],
+              const SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: () {},
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.blue,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  elevation: 0,
+                ),
+                child: Text(
+                  'Read Full Article on Wikipedia',
+                  style: GoogleFonts.poppins(
+                    fontWeight: FontWeight.w500,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
